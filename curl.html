@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>CURL 执行工具 (最小可运行版)</title>
+  <style>
+    body { font-family: monospace, sans-serif; margin: 20px; }
+    textarea { width: 100%; height: 200px; }
+    pre { background: #111; color: #0f0; padding: 10px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>CURL 执行工具 (前端版)</h1>
+  <textarea id="curlInput" placeholder="输入 curl 命令"></textarea><br/>
+  <button id="runBtn">执行</button>
+  <div id="output"></div>
+
+  <script>
+    // 工具：尝试解析 JSON
+    function tryParseJSON(txt) {
+      try { return JSON.parse(txt); } catch { return txt; }
+    }
+
+    // 简易解析 curl 命令
+    function parseCurl(cmd) {
+      const tokens = cmd.match(/'[^']*'|"[^"]*"|\S+/g) || [];
+      let url = '';
+      let method = 'GET';
+      let headers = {};
+      let body;
+
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (t === '-X' || t === '--request') {
+          method = tokens[++i]?.replace(/['"]/g, '');
+        } else if (t === '-H' || t === '--header') {
+          const headerStr = tokens[++i]?.replace(/^['"]|['"]$/g, '');
+          if (headerStr) {
+            const idx = headerStr.indexOf(':');
+            if (idx > -1) {
+              const key = headerStr.slice(0, idx).trim();
+              const val = headerStr.slice(idx+1).trim();
+              headers[key] = val;
+            }
+          }
+        } else if (t === '-d' || t === '--data' || t === '--data-raw') {
+          body = tokens[++i]?.replace(/^['"]|['"]$/g, '');
+        } else if (/^https?:\/\//.test(t.replace(/['"]/g, ''))) {
+          url = t.replace(/['"]/g, '');
+        }
+      }
+
+      if (!method && body) method = 'POST';
+      return { url, method, headers, body };
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const runBtn = document.getElementById("runBtn");
+      const input = document.getElementById("curlInput");
+      const output = document.getElementById("output");
+
+      runBtn.onclick = async () => {
+        output.innerHTML = "<em>执行中...</em>";
+        console.clear();
+
+        try {
+          const curl = input.value.trim();
+          if (!curl.startsWith("curl")) throw new Error("请输入以 curl 开头的命令");
+
+          const { url, method, headers, body } = parseCurl(curl);
+          console.log("解析结果:", { url, method, headers, body });
+          if (!url) throw new Error("无法解析 URL");
+
+          const res = await fetch(url, { method, headers, body });
+          const text = await res.text();
+          console.log("接口原始响应:", text);
+
+          const resultObj = {
+            status: res.status,
+            headers: Object.fromEntries(res.headers.entries()),
+            body: tryParseJSON(text)
+          };
+          output.innerHTML = `<pre>${JSON.stringify(resultObj, null, 2)}</pre>`;
+        } catch (err) {
+          console.error(err);
+          output.innerHTML = `<div style="color:red">错误：${err.message}</div>`;
+        }
+      };
+    });
+  </script>
+</body>
+</html>
