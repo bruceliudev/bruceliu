@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# 禁止爬虫访问可能包含敏感信息的路径（如果有）
+# Disallow: /private/
+# Disallow: /admin/
+
+# 指向你的站点地图，帮助搜索引擎快速发现所有页面
+Sitemap: https://curlonline.com/sitemap.xml
+    
