@@ -2,7 +2,9 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>CURL 在线执行</title>
+  <title>CURL Online</title>
+  <!-- Favicon: 圆角蓝底，白色居中文字 C -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' ry='20' fill='%232563eb'/%3E%3Ctext x='50%25' y='50%25' dy='.35em' font-size='60' text-anchor='middle' fill='white' font-family='Segoe UI, Arial, sans-serif'%3EC%3C/text%3E%3C/svg%3E">
   <style>
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
@@ -25,26 +27,14 @@
     .lang-switch {
       margin-top: 0.5rem;
     }
-    .lang-switch button {
-      margin: 0 5px;
+    .lang-switch select {
       padding: 6px 12px;
       font-size: 13px;
-      border: none;
+      border: 1px solid #d1d5db;
       border-radius: 4px;
       cursor: pointer;
       background: #fff;
-      color: #2563eb;
-      line-height: 1.2;
-      height: 32px;
-      min-width: 70px;
-      transition: all 0.2s;
-    }
-    .lang-switch button.active {
-      background: #2563eb;
-      color: #fff;
-    }
-    .lang-switch button:hover:not(.active) {
-      background: #e5e7eb;
+      color: #374151;
     }
     main {
       max-width: 900px;
@@ -90,8 +80,8 @@
     }
     #output {
       margin-top: 1.5rem;
-      background: #111;
-      color: #0f0;
+      background: #f3f4f6;
+      color: #111827;
       padding: 15px;
       border-radius: 8px;
       font-size: 14px;
@@ -99,6 +89,7 @@
       overflow-x: auto;
       white-space: pre-wrap;
       word-wrap: break-word;
+      width: 100%;
     }
     .error {
       color: #b91c1c;
@@ -122,10 +113,13 @@
 
 <body>
   <header>
-    <h1 data-i18n="title">CURL 在线执行</h1>
+    <h1>CURL Online</h1>
     <div class="lang-switch">
-      <button id="btnZh" onclick="setLang('zh')">中文</button>
-      <button id="btnEn" onclick="setLang('en')">English</button>
+      <label for="langSelect">🌐 Language: </label>
+      <select id="langSelect" onchange="setLang(this.value)">
+        <option value="zh" selected>中文</option>
+        <option value="en">English</option>
+      </select>
     </div>
   </header>
   <main>
@@ -138,7 +132,7 @@
   <script>
     const i18n = {
       zh: {
-        title: "CURL 在线执行",
+        title: "CURL Online",
         inputLabel: "输入 CURL 命令：",
         run: "执行",
         running: "执行中...",
@@ -148,7 +142,7 @@
         invalidURL: "无法解析 URL"
       },
       en: {
-        title: "CURL Online Executor",
+        title: "CURL Online",
         inputLabel: "Enter CURL command:",
         run: "Run",
         running: "Running...",
@@ -170,10 +164,7 @@
         }
       });
       document.getElementById("curlInput").placeholder = i18n[lang].placeholder;
-
-      // 设置按钮高亮
-      document.getElementById("btnZh").classList.toggle("active", lang === 'zh');
-      document.getElementById("btnEn").classList.toggle("active", lang === 'en');
+      document.getElementById("langSelect").value = lang;
     }
 
     function tryParseJSON(txt) {
@@ -241,7 +232,7 @@
           output.textContent = JSON.stringify(resultObj, null, 2);
         } catch (err) {
           console.error(err);
-          output.innerHTML = `<div class="error">${err.message}</div>`;
+          output.innerHTML = `<div class=\"error\">${err.message}</div>`;
         }
       };
 
