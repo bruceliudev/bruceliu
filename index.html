@@ -108,8 +108,28 @@
     button#copyBtn:hover {
       background: #059669;
     }
+    .execution-stats {
+      margin-top: 1rem;
+      padding: 8px 12px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      font-size: 13px; /* 统一统计信息字体大小 */
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+    }
+    .execution-stats .status {
+      font-weight: 500; /* 成功和错误状态都保持相同的字重 */
+      font-size: 13px; /* 明确设置相同的字体大小 */
+    }
+    .execution-stats .status.success {
+      color: #059669; /* 成功状态为绿色 */
+    }
+    .execution-stats .status.error {
+      color: #dc2626; /* 错误状态为红色 */
+    }
     #output {
-      margin-top: 1.5rem;
+      margin-top: 0.5rem;
       background: #f3f4f6;
       color: #111827;
       padding: 15px;
@@ -123,10 +143,10 @@
     }
     .error {
       color: #b91c1c;
-      background: #fee2e2;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 1rem;
+      /* 完全移除错误信息的背景样式和额外间距 */
+      padding: 0;
+      margin-top: 0; /* 关键修改：移除错误信息上方的额外间距 */
+      font-size: 14px;
     }
     .notification {
       position: fixed;
@@ -188,6 +208,8 @@
       <button id="clearBtn" data-i18n="clear">清空</button>
       <button id="copyBtn" data-i18n="copy">复制结果</button>
     </div>
+    <!-- 执行统计信息显示区域 -->
+    <div id="executionStats" class="execution-stats" style="display: none;"></div>
     <div id="output"></div>
   </main>
 
@@ -208,10 +230,13 @@
         errorPrefix: "错误：",
         placeholder: "请输入以 curl 开头的命令...",
         invalidCurl: "请输入以 curl 开头的命令",
+        emptyInput: "输入内容不能为空",
         invalidURL: "无法解析 URL",
         copySuccess: "复制成功！",
         copyEmpty: "没有可复制的内容",
-        copyFallback: "请手动复制内容"
+        copyFallback: "请手动复制内容",
+        statusCode: "状态码: ",
+        executionTime: "执行时间: "
       },
       en: {
         title: "CURL Online",
@@ -223,10 +248,13 @@
         errorPrefix: "Error:",
         placeholder: "Please enter a curl command...",
         invalidCurl: "Please start with a curl command",
+        emptyInput: "Input cannot be empty",
         invalidURL: "Cannot parse URL",
         copySuccess: "Copied successfully!",
         copyEmpty: "No content to copy",
-        copyFallback: "Please copy content manually"
+        copyFallback: "Please copy content manually",
+        statusCode: "Status code: ",
+        executionTime: "Execution time: "
       }
     };
 
@@ -364,29 +392,64 @@
       const copyBtn = document.getElementById("copyBtn");
       const input = document.getElementById("curlInput");
       const output = document.getElementById("output");
+      const executionStats = document.getElementById("executionStats");
 
       // 执行按钮功能
       runBtn.onclick = async () => {
         output.innerHTML = `<em style='color:#aaa'>${i18n[currentLang].running}</em>`;
+        executionStats.style.display = 'none'; // 隐藏统计信息
+        const startTime = performance.now(); // 记录开始时间
         
         try {
           const curl = input.value.trim();
+          // 先检查输入是否为空
+          if (curl === "") throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].emptyInput);
+          // 再检查是否以curl开头
           if (!curl.startsWith("curl")) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidCurl);
 
           const { url, method, headers, body } = parseCurl(curl);
           if (!url) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidURL);
 
           const res = await fetch(url, { method, headers, body });
+          const endTime = performance.now(); // 记录结束时间
+          const executionTime = Math.round(endTime - startTime); // 计算执行时间（毫秒）
+          
           const text = await res.text();
-
           const resultObj = {
             status: res.status,
             headers: Object.fromEntries(res.headers.entries()),
             body: tryParseJSON(text)
           };
           output.textContent = JSON.stringify(resultObj, null, 2);
+          
+          // 显示执行统计信息
+          const isSuccess = res.status >= 200 && res.status < 300;
+          executionStats.innerHTML = `
+            <div class="status ${isSuccess ? 'success' : 'error'}">
+              ${i18n[currentLang].statusCode}${res.status}
+            </div>
+            <div>
+              ${i18n[currentLang].executionTime}${executionTime}ms
+            </div>
+          `;
+          executionStats.style.display = 'flex';
+
         } catch (err) {
-          output.innerHTML = `<div class=\"error\">${err.message}</div>`;
+          const endTime = performance.now();
+          const executionTime = Math.round(endTime - startTime);
+          // 错误信息仅保留文字，无背景框和额外间距
+          output.innerHTML = `<div class="error">${err.message}</div>`;
+          
+          // 错误状态统计信息，无特殊背景
+          executionStats.innerHTML = `
+            <div class="status error">
+              ${i18n[currentLang].statusCode}错误
+            </div>
+            <div>
+              ${i18n[currentLang].executionTime}${executionTime}ms
+            </div>
+          `;
+          executionStats.style.display = 'flex';
         }
       };
 
@@ -394,6 +457,7 @@
       clearBtn.onclick = () => {
         input.value = '';
         output.innerHTML = '';
+        executionStats.style.display = 'none'; // 清空时也隐藏统计信息
       };
 
       // 复制结果按钮功能 - 增强版
