@@ -6,6 +6,7 @@
   <!-- Favicon: 圆角蓝底，白色居中文字 C -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' ry='20' fill='%232563eb'/%3E%3Ctext x='50%25' y='50%25' dy='.35em' font-size='60' text-anchor='middle' fill='white' font-family='Segoe UI, Arial, sans-serif'%3EC%3C/text%3E%3C/svg%3E">
   <style>
+    /* 保持原有样式不变 */
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
       margin: 0;
@@ -19,22 +20,35 @@
       padding: 1rem 2rem;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     h1 {
       margin: 0;
       font-size: 1.8rem;
     }
     .lang-switch {
-      margin-top: 0.5rem;
+      position: absolute;
+      right: 2rem;
+      display: flex;
+      align-items: center;
     }
     .lang-switch select {
-      padding: 6px 12px;
+      padding: 6px 24px 6px 8px;
+      min-width: 90px;
       font-size: 13px;
       border: 1px solid #d1d5db;
       border-radius: 4px;
       cursor: pointer;
       background: #fff;
       color: #374151;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      background-size: 12px;
     }
     main {
       max-width: 900px;
@@ -60,23 +74,39 @@
       border-color: #2563eb;
       box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
     }
-    button#runBtn {
+    .button-group {
       margin-top: 1rem;
+      display: flex;
+      gap: 10px;
+    }
+    button {
       padding: 10px 20px;
       font-size: 14px;
-      background: #2563eb;
-      color: #fff;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.2s;
     }
+    button#runBtn {
+      background: #2563eb;
+      color: #fff;
+    }
     button#runBtn:hover {
       background: #1e4db7;
     }
-    button#runBtn:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
+    button#clearBtn {
+      background: #6b7280;
+      color: #fff;
+    }
+    button#clearBtn:hover {
+      background: #4b5563;
+    }
+    button#copyBtn {
+      background: #10b981;
+      color: #fff;
+    }
+    button#copyBtn:hover {
+      background: #059669;
     }
     #output {
       margin-top: 1.5rem;
@@ -98,6 +128,35 @@
       border-radius: 8px;
       margin-top: 1rem;
     }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    .notification.success {
+      background: #10b981;
+    }
+    .notification.error {
+      background: #ef4444;
+    }
+    .notification.show {
+      opacity: 1;
+    }
+    /* 用于复制的隐藏元素样式 */
+    #copyHelper {
+      position: absolute;
+      top: -100px;
+      left: -100px;
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -115,7 +174,6 @@
   <header>
     <h1>CURL Online</h1>
     <div class="lang-switch">
-      <label for="langSelect">🌐 Language: </label>
       <select id="langSelect" onchange="setLang(this.value)">
         <option value="zh" selected>中文</option>
         <option value="en">English</option>
@@ -125,9 +183,18 @@
   <main>
     <label for="curlInput" data-i18n="inputLabel"><strong>输入 CURL 命令：</strong></label>
     <textarea id="curlInput" placeholder="请输入以 curl 开头的命令..."></textarea><br/>
-    <button id="runBtn" data-i18n="run">执行</button>
+    <div class="button-group">
+      <button id="runBtn" data-i18n="run">执行</button>
+      <button id="clearBtn" data-i18n="clear">清空</button>
+      <button id="copyBtn" data-i18n="copy">复制结果</button>
+    </div>
     <div id="output"></div>
   </main>
+
+  <!-- 通知提示框 -->
+  <div id="notification" class="notification"></div>
+  <!-- 用于复制操作的辅助元素 -->
+  <textarea id="copyHelper"></textarea>
 
   <script>
     const i18n = {
@@ -135,21 +202,31 @@
         title: "CURL Online",
         inputLabel: "输入 CURL 命令：",
         run: "执行",
+        clear: "清空",
+        copy: "复制结果",
         running: "执行中...",
         errorPrefix: "错误：",
         placeholder: "请输入以 curl 开头的命令...",
         invalidCurl: "请输入以 curl 开头的命令",
-        invalidURL: "无法解析 URL"
+        invalidURL: "无法解析 URL",
+        copySuccess: "复制成功！",
+        copyEmpty: "没有可复制的内容",
+        copyFallback: "请手动复制内容"
       },
       en: {
         title: "CURL Online",
         inputLabel: "Enter CURL command:",
         run: "Run",
+        clear: "Clear",
+        copy: "Copy Result",
         running: "Running...",
         errorPrefix: "Error:",
         placeholder: "Please enter a curl command...",
         invalidCurl: "Please start with a curl command",
-        invalidURL: "Cannot parse URL"
+        invalidURL: "Cannot parse URL",
+        copySuccess: "Copied successfully!",
+        copyEmpty: "No content to copy",
+        copyFallback: "Please copy content manually"
       }
     };
 
@@ -165,6 +242,17 @@
       });
       document.getElementById("curlInput").placeholder = i18n[lang].placeholder;
       document.getElementById("langSelect").value = lang;
+    }
+
+    function showNotification(message, isSuccess = true) {
+      const notification = document.getElementById("notification");
+      notification.textContent = message;
+      notification.className = "notification " + (isSuccess ? "success" : "error");
+      notification.classList.add("show");
+      
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, 2000);
     }
 
     function tryParseJSON(txt) {
@@ -203,26 +291,93 @@
       return { url, method, headers, body };
     }
 
+    // 确保复制功能可靠工作的核心函数
+    function copyToClipboard(text) {
+      return new Promise((resolve, reject) => {
+        // 方法1: 使用Clipboard API（现代浏览器首选）
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text)
+            .then(resolve)
+            .catch(err => {
+              console.log('Clipboard API 失败，尝试备选方案:', err);
+              // 失败时尝试其他方法
+              fallbackCopyMethod1(text, resolve, reject);
+            });
+        } else {
+          // 不支持Clipboard API，直接使用备选方法
+          fallbackCopyMethod1(text, resolve, reject);
+        }
+      });
+    }
+
+    // 备选方法1: 使用隐藏的textarea元素
+    function fallbackCopyMethod1(text, resolve, reject) {
+      const textarea = document.getElementById('copyHelper');
+      textarea.value = text;
+      textarea.select();
+      textarea.setSelectionRange(0, text.length); // 用于移动设备
+
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          resolve();
+        } else {
+          console.log('execCommand 失败，尝试备选方案2');
+          fallbackCopyMethod2(text, resolve, reject);
+        }
+      } catch (err) {
+        console.log('execCommand 抛出错误，尝试备选方案2:', err);
+        fallbackCopyMethod2(text, resolve, reject);
+      }
+    }
+
+    // 备选方法2: 创建新的textarea元素
+    function fallbackCopyMethod2(text, resolve, reject) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-999px';
+      textarea.style.top = '-999px';
+      document.body.appendChild(textarea);
+      
+      textarea.select();
+      textarea.setSelectionRange(0, text.length);
+
+      try {
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (successful) {
+          resolve();
+        } else {
+          reject(new Error('复制失败'));
+        }
+      } catch (err) {
+        document.body.removeChild(textarea);
+        reject(err);
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       const runBtn = document.getElementById("runBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const copyBtn = document.getElementById("copyBtn");
       const input = document.getElementById("curlInput");
       const output = document.getElementById("output");
 
+      // 执行按钮功能
       runBtn.onclick = async () => {
         output.innerHTML = `<em style='color:#aaa'>${i18n[currentLang].running}</em>`;
-        console.clear();
-
+        
         try {
           const curl = input.value.trim();
           if (!curl.startsWith("curl")) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidCurl);
 
           const { url, method, headers, body } = parseCurl(curl);
-          console.log("解析结果:", { url, method, headers, body });
           if (!url) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidURL);
 
           const res = await fetch(url, { method, headers, body });
           const text = await res.text();
-          console.log("接口原始响应:", text);
 
           const resultObj = {
             status: res.status,
@@ -231,8 +386,46 @@
           };
           output.textContent = JSON.stringify(resultObj, null, 2);
         } catch (err) {
-          console.error(err);
           output.innerHTML = `<div class=\"error\">${err.message}</div>`;
+        }
+      };
+
+      // 清空按钮功能
+      clearBtn.onclick = () => {
+        input.value = '';
+        output.innerHTML = '';
+      };
+
+      // 复制结果按钮功能 - 增强版
+      copyBtn.onclick = async () => {
+        // 1. 确保获取正确的输出内容
+        let content = output.textContent.trim();
+        
+        // 处理错误信息的情况
+        if (!content && output.querySelector('.error')) {
+          content = output.querySelector('.error').textContent.trim();
+        }
+
+        if (!content) {
+          showNotification(i18n[currentLang].copyEmpty, false);
+          return;
+        }
+
+        // 2. 尝试复制，使用多重备选方案
+        try {
+          await copyToClipboard(content);
+          showNotification(i18n[currentLang].copySuccess);
+        } catch (err) {
+          console.error('所有复制方法均失败:', err);
+          // 3. 如果所有方法都失败，提示用户手动复制
+          showNotification(i18n[currentLang].copyFallback, false);
+          
+          // 辅助用户手动复制：选中输出内容
+          const range = document.createRange();
+          range.selectNodeContents(output);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
         }
       };
 
@@ -242,3 +435,4 @@
   </script>
 </body>
 </html>
+    
