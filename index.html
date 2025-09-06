@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>CURL 执行工具</title>
+  <title>CURL 在线执行</title>
   <style>
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
@@ -21,6 +21,30 @@
     h1 {
       margin: 0;
       font-size: 1.8rem;
+    }
+    .lang-switch {
+      margin-top: 0.5rem;
+    }
+    .lang-switch button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #fff;
+      color: #2563eb;
+      line-height: 1.2;
+      height: 32px;
+      min-width: 70px;
+      transition: all 0.2s;
+    }
+    .lang-switch button.active {
+      background: #2563eb;
+      color: #fff;
+    }
+    .lang-switch button:hover:not(.active) {
+      background: #e5e7eb;
     }
     main {
       max-width: 900px;
@@ -46,7 +70,7 @@
       border-color: #2563eb;
       box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
     }
-    button {
+    button#runBtn {
       margin-top: 1rem;
       padding: 10px 20px;
       font-size: 14px;
@@ -57,10 +81,10 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover {
+    button#runBtn:hover {
       background: #1e4db7;
     }
-    button:disabled {
+    button#runBtn:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
@@ -85,24 +109,79 @@
     }
   </style>
 </head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1KGXQTXGG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-Q1KGXQTXGG');
+</script>
+
 <body>
   <header>
-    <h1>CURL 执行工具</h1>
+    <h1 data-i18n="title">CURL 在线执行</h1>
+    <div class="lang-switch">
+      <button id="btnZh" onclick="setLang('zh')">中文</button>
+      <button id="btnEn" onclick="setLang('en')">English</button>
+    </div>
   </header>
   <main>
-    <label for="curlInput"><strong>输入 CURL 命令：</strong></label>
+    <label for="curlInput" data-i18n="inputLabel"><strong>输入 CURL 命令：</strong></label>
     <textarea id="curlInput" placeholder="请输入以 curl 开头的命令..."></textarea><br/>
-    <button id="runBtn">执行</button>
+    <button id="runBtn" data-i18n="run">执行</button>
     <div id="output"></div>
   </main>
 
   <script>
+    const i18n = {
+      zh: {
+        title: "CURL 在线执行",
+        inputLabel: "输入 CURL 命令：",
+        run: "执行",
+        running: "执行中...",
+        errorPrefix: "错误：",
+        placeholder: "请输入以 curl 开头的命令...",
+        invalidCurl: "请输入以 curl 开头的命令",
+        invalidURL: "无法解析 URL"
+      },
+      en: {
+        title: "CURL Online Executor",
+        inputLabel: "Enter CURL command:",
+        run: "Run",
+        running: "Running...",
+        errorPrefix: "Error:",
+        placeholder: "Please enter a curl command...",
+        invalidCurl: "Please start with a curl command",
+        invalidURL: "Cannot parse URL"
+      }
+    };
+
+    let currentLang = 'zh';
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[lang][key]) {
+          el.innerText = i18n[lang][key];
+        }
+      });
+      document.getElementById("curlInput").placeholder = i18n[lang].placeholder;
+
+      // 设置按钮高亮
+      document.getElementById("btnZh").classList.toggle("active", lang === 'zh');
+      document.getElementById("btnEn").classList.toggle("active", lang === 'en');
+    }
+
     function tryParseJSON(txt) {
       try { return JSON.parse(txt); } catch { return txt; }
     }
 
     function parseCurl(cmd) {
-      const tokens = cmd.match(/'[^']*'|"[^"]*"|\S+/g) || [];
+      const tokens = cmd.match(/'[^']*'|\"[^\"]*\"|\S+/g) || [];
       let url = '';
       let method = 'GET';
       let headers = {};
@@ -111,9 +190,9 @@
       for (let i = 0; i < tokens.length; i++) {
         const t = tokens[i];
         if (t === '-X' || t === '--request') {
-          method = tokens[++i]?.replace(/['"]/g, '');
+          method = tokens[++i]?.replace(/['\"]/g, '');
         } else if (t === '-H' || t === '--header') {
-          const headerStr = tokens[++i]?.replace(/^['"]|['"]$/g, '');
+          const headerStr = tokens[++i]?.replace(/^['\"]|['\"]$/g, '');
           if (headerStr) {
             const idx = headerStr.indexOf(':');
             if (idx > -1) {
@@ -123,9 +202,9 @@
             }
           }
         } else if (t === '-d' || t === '--data' || t === '--data-raw') {
-          body = tokens[++i]?.replace(/^['"]|['"]$/g, '');
-        } else if (/^https?:\/\//.test(t.replace(/['"]/g, ''))) {
-          url = t.replace(/['"]/g, '');
+          body = tokens[++i]?.replace(/^['\"]|['\"]$/g, '');
+        } else if (/^https?:\/\//.test(t.replace(/['\"]/g, ''))) {
+          url = t.replace(/['\"]/g, '');
         }
       }
 
@@ -139,16 +218,16 @@
       const output = document.getElementById("output");
 
       runBtn.onclick = async () => {
-        output.innerHTML = "<em style='color:#aaa'>执行中...</em>";
+        output.innerHTML = `<em style='color:#aaa'>${i18n[currentLang].running}</em>`;
         console.clear();
 
         try {
           const curl = input.value.trim();
-          if (!curl.startsWith("curl")) throw new Error("请输入以 curl 开头的命令");
+          if (!curl.startsWith("curl")) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidCurl);
 
           const { url, method, headers, body } = parseCurl(curl);
           console.log("解析结果:", { url, method, headers, body });
-          if (!url) throw new Error("无法解析 URL");
+          if (!url) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidURL);
 
           const res = await fetch(url, { method, headers, body });
           const text = await res.text();
@@ -162,9 +241,12 @@
           output.textContent = JSON.stringify(resultObj, null, 2);
         } catch (err) {
           console.error(err);
-          output.innerHTML = `<div class="error">错误：${err.message}</div>`;
+          output.innerHTML = `<div class="error">${err.message}</div>`;
         }
       };
+
+      // 初始化语言
+      setLang(currentLang);
     });
   </script>
 </body>
