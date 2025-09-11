@@ -2,198 +2,46 @@
 <html lang="zh">
 <head>
   <title>CURL Online - 在线CURL命令执行工具 | 快速测试API请求</title>
-
   <meta charset="UTF-8">
-  <!-- 针对搜索引擎的关键词标签（非必需，但部分引擎仍会参考） -->
   <meta name="keywords" content="CURL在线工具, 在线执行CURL, API测试, 接口调试, curl command online">
-
-  <!-- 社交平台分享优化（当用户分享链接时显示的预览信息） -->
   <meta property="og:title" content="CURL Online - 在线CURL命令执行工具">
   <meta property="og:description" content="免费在线运行CURL命令，快速测试和调试API接口，无需安装任何软件。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://curlonline.com">
-  <meta property="og:image" content="https://curlonline.com/og-image.png"> <!-- 建议准备一张工具截图作为分享图片 -->
-
-  <!-- Twitter分享优化 -->
+  <meta property="og:image" content="https://curlonline.com/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CURL Online - 在线CURL命令执行工具">
   <meta name="twitter:description" content="免费在线运行CURL命令，快速测试和调试API接口，无需安装任何软件。">
   <meta name="twitter:image" content="https://curlonline.com/og-image.png">
-
-  <!-- Favicon: 圆角蓝底，白色居中文字 C -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' ry='20' fill='%232563eb'/%3E%3Ctext x='50%25' y='50%25' dy='.35em' font-size='60' text-anchor='middle' fill='white' font-family='Segoe UI, Arial, sans-serif'%3EC%3C/text%3E%3C/svg%3E">
   <style>
-    /* 保持原有样式不变 */
-    body {
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9fafb;
-      color: #333;
-    }
-    header {
-      background: #2563eb;
-      color: #fff;
-      padding: 1rem 2rem;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-    .lang-switch {
-      position: absolute;
-      right: 2rem;
-      display: flex;
-      align-items: center;
-    }
-    .lang-switch select {
-      padding: 6px 24px 6px 8px;
-      min-width: 90px;
-      font-size: 13px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      cursor: pointer;
-      background: #fff;
-      color: #374151;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 6px center;
-      background-size: 12px;
-    }
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    textarea {
-      width: 100%;
-      height: 200px;
-      font-family: monospace;
-      font-size: 14px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      resize: vertical;
-      transition: border-color 0.2s;
-    }
-    textarea:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
-    }
-    .button-group {
-      margin-top: 1rem;
-      display: flex;
-      gap: 10px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button#runBtn {
-      background: #2563eb;
-      color: #fff;
-    }
-    button#runBtn:hover {
-      background: #1e4db7;
-    }
-    button#clearBtn {
-      background: #6b7280;
-      color: #fff;
-    }
-    button#clearBtn:hover {
-      background: #4b5563;
-    }
-    button#copyBtn {
-      background: #10b981;
-      color: #fff;
-    }
-    button#copyBtn:hover {
-      background: #059669;
-    }
-    .execution-stats {
-      margin-top: 1rem;
-      padding: 8px 12px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      font-size: 13px; /* 统一统计信息字体大小 */
-      color: #334155;
-      display: flex;
-      justify-content: space-between;
-    }
-    .execution-stats .status {
-      font-weight: 500; /* 成功和错误状态都保持相同的字重 */
-      font-size: 13px; /* 明确设置相同的字体大小 */
-    }
-    .execution-stats .status.success {
-      color: #059669; /* 成功状态为绿色 */
-    }
-    .execution-stats .status.error {
-      color: #dc2626; /* 错误状态为红色 */
-    }
-    #output {
-      margin-top: 0.5rem;
-      background: #f3f4f6;
-      color: #111827;
-      padding: 15px;
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.4;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      width: 100%;
-    }
-    .error {
-      color: #b91c1c;
-      /* 完全移除错误信息的背景样式和额外间距 */
-      padding: 0;
-      margin-top: 0; /* 关键修改：移除错误信息上方的额外间距 */
-      font-size: 14px;
-    }
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      border-radius: 6px;
-      color: white;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 1000;
-    }
-    .notification.success {
-      background: #10b981;
-    }
-    .notification.error {
-      background: #ef4444;
-    }
-    .notification.show {
-      opacity: 1;
-    }
-    /* 用于复制的隐藏元素样式 */
-    #copyHelper {
-      position: absolute;
-      top: -100px;
-      left: -100px;
-      opacity: 0;
-      pointer-events: none;
-    }
+    body { font-family: "Segoe UI", Tahoma, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
+    header { background: #2563eb; color: #fff; padding: 1rem 2rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; display: flex; align-items: center; justify-content: center; }
+    h1 { margin: 0; font-size: 1.8rem; }
+    .lang-switch { position: absolute; right: 2rem; display: flex; align-items: center; }
+    .lang-switch select { padding: 6px 24px 6px 8px; min-width: 90px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; background: #fff; color: #374151; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; background-size: 12px; }
+    main { max-width: 900px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    textarea { width: 100%; height: 200px; font-family: monospace; font-size: 14px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical; transition: border-color 0.2s; }
+    textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+    .button-group { margin-top: 1rem; display: flex; gap: 10px; }
+    button { padding: 10px 20px; font-size: 14px; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+    button#runBtn { background: #2563eb; color: #fff; }
+    button#runBtn:hover { background: #1e4db7; }
+    button#clearBtn { background: #6b7280; color: #fff; }
+    button#clearBtn:hover { background: #4b5563; }
+    button#copyBtn { background: #10b981; color: #fff; }
+    button#copyBtn:hover { background: #059669; }
+    .execution-stats { margin-top: 1rem; padding: 8px 12px; background: #f1f5f9; border-radius: 6px; font-size: 13px; color: #334155; display: flex; justify-content: space-between; }
+    .execution-stats .status { font-weight: 500; font-size: 13px; }
+    .execution-stats .status.success { color: #059669; }
+    .execution-stats .status.error { color: #dc2626; }
+    #output { margin-top: 0.5rem; background: #f3f4f6; color: #111827; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.4; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; }
+    .error { color: #b91c1c; padding: 0; margin-top: 0; font-size: 14px; }
+    .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 6px; color: white; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+    .notification.success { background: #10b981; }
+    .notification.error { background: #ef4444; }
+    .notification.show { opacity: 1; }
+    #copyHelper { position: absolute; top: -100px; left: -100px; opacity: 0; pointer-events: none; }
   </style>
 </head>
 
@@ -225,65 +73,26 @@
       <button id="clearBtn" data-i18n="clear">清空</button>
       <button id="copyBtn" data-i18n="copy">复制结果</button>
     </div>
-    <!-- 执行统计信息显示区域 -->
     <div id="executionStats" class="execution-stats" style="display: none;"></div>
     <div id="output"></div>
   </main>
-
-  <!-- 通知提示框 -->
   <div id="notification" class="notification"></div>
-  <!-- 用于复制操作的辅助元素 -->
   <textarea id="copyHelper"></textarea>
 
   <script>
+    const FUNCTION_URL = "https://curl-proxy.bruceliu-dev.workers.dev/";
+
     const i18n = {
-      zh: {
-        title: "CURL Online",
-        inputLabel: "输入 CURL 命令：",
-        run: "执行",
-        clear: "清空",
-        copy: "复制结果",
-        running: "执行中...",
-        errorPrefix: "错误：",
-        placeholder: "请输入以 curl 开头的命令...",
-        invalidCurl: "请输入以 curl 开头的命令",
-        emptyInput: "输入内容不能为空",
-        invalidURL: "无法解析 URL",
-        copySuccess: "复制成功！",
-        copyEmpty: "没有可复制的内容",
-        copyFallback: "请手动复制内容",
-        statusCode: "状态码: ",
-        executionTime: "执行时间: "
-      },
-      en: {
-        title: "CURL Online",
-        inputLabel: "Enter CURL command:",
-        run: "Run",
-        clear: "Clear",
-        copy: "Copy Result",
-        running: "Running...",
-        errorPrefix: "Error:",
-        placeholder: "Please enter a curl command...",
-        invalidCurl: "Please start with a curl command",
-        emptyInput: "Input cannot be empty",
-        invalidURL: "Cannot parse URL",
-        copySuccess: "Copied successfully!",
-        copyEmpty: "No content to copy",
-        copyFallback: "Please copy content manually",
-        statusCode: "Status code: ",
-        executionTime: "Execution time: "
-      }
+      zh: { title:"CURL Online", inputLabel:"输入 CURL 命令：", run:"执行", clear:"清空", copy:"复制结果", running:"执行中...", errorPrefix:"错误：", placeholder:"请输入以 curl 开头的命令...", invalidCurl:"请输入以 curl 开头的命令", emptyInput:"输入内容不能为空", invalidURL:"无法解析 URL", copySuccess:"复制成功！", copyEmpty:"没有可复制的内容", copyFallback:"请手动复制内容", statusCode:"状态码: ", executionTime:"执行时间: " },
+      en: { title:"CURL Online", inputLabel:"Enter CURL command:", run:"Run", clear:"Clear", copy:"Copy Result", running:"Running...", errorPrefix:"Error:", placeholder:"Please enter a curl command...", invalidCurl:"Please start with a curl command", emptyInput:"Input cannot be empty", invalidURL:"Cannot parse URL", copySuccess:"Copied successfully!", copyEmpty:"No content to copy", copyFallback:"Please copy content manually", statusCode:"Status code: ", executionTime:"Execution time: " }
     };
 
     let currentLang = 'zh';
-
     function setLang(lang) {
       currentLang = lang;
       document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (i18n[lang][key]) {
-          el.innerText = i18n[lang][key];
-        }
+        if (i18n[lang][key]) { el.innerText = i18n[lang][key]; }
       });
       document.getElementById("curlInput").placeholder = i18n[lang].placeholder;
       document.getElementById("langSelect").value = lang;
@@ -294,113 +103,48 @@
       notification.textContent = message;
       notification.className = "notification " + (isSuccess ? "success" : "error");
       notification.classList.add("show");
-      
-      setTimeout(() => {
-        notification.classList.remove("show");
-      }, 2000);
-    }
-
-    function tryParseJSON(txt) {
-      try { return JSON.parse(txt); } catch { return txt; }
+      setTimeout(() => { notification.classList.remove("show"); }, 2000);
     }
 
     function parseCurl(cmd) {
       const tokens = cmd.match(/'[^']*'|\"[^\"]*\"|\S+/g) || [];
-      let url = '';
-      let method = 'GET';
-      let headers = {};
-      let body;
-
-      for (let i = 0; i < tokens.length; i++) {
+      let url = ''; let method = 'GET'; let headers = {}; let body;
+      for (let i=0;i<tokens.length;i++) {
         const t = tokens[i];
-        if (t === '-X' || t === '--request') {
-          method = tokens[++i]?.replace(/['\"]/g, '');
-        } else if (t === '-H' || t === '--header') {
+        if (t === '-X' || t === '--request') { method = tokens[++i]?.replace(/['\"]/g, ''); }
+        else if (t === '-H' || t === '--header') {
           const headerStr = tokens[++i]?.replace(/^['\"]|['\"]$/g, '');
-          if (headerStr) {
-            const idx = headerStr.indexOf(':');
-            if (idx > -1) {
-              const key = headerStr.slice(0, idx).trim();
-              const val = headerStr.slice(idx+1).trim();
-              headers[key] = val;
-            }
-          }
+          if (headerStr) { const idx = headerStr.indexOf(':'); if (idx > -1) { const key = headerStr.slice(0, idx).trim(); const val = headerStr.slice(idx+1).trim(); headers[key] = val; } }
         } else if (t === '-d' || t === '--data' || t === '--data-raw') {
           body = tokens[++i]?.replace(/^['\"]|['\"]$/g, '');
         } else if (/^https?:\/\//.test(t.replace(/['\"]/g, ''))) {
           url = t.replace(/['\"]/g, '');
         }
       }
-
       if (!method && body) method = 'POST';
       return { url, method, headers, body };
     }
 
-    // 确保复制功能可靠工作的核心函数
     function copyToClipboard(text) {
       return new Promise((resolve, reject) => {
-        // 方法1: 使用Clipboard API（现代浏览器首选）
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(text)
-            .then(resolve)
-            .catch(err => {
-              console.log('Clipboard API 失败，尝试备选方案:', err);
-              // 失败时尝试其他方法
-              fallbackCopyMethod1(text, resolve, reject);
-            });
-        } else {
-          // 不支持Clipboard API，直接使用备选方法
-          fallbackCopyMethod1(text, resolve, reject);
-        }
+          navigator.clipboard.writeText(text).then(resolve).catch(err => { fallbackCopyMethod1(text, resolve, reject); });
+        } else { fallbackCopyMethod1(text, resolve, reject); }
       });
     }
 
-    // 备选方法1: 使用隐藏的textarea元素
     function fallbackCopyMethod1(text, resolve, reject) {
       const textarea = document.getElementById('copyHelper');
-      textarea.value = text;
-      textarea.select();
-      textarea.setSelectionRange(0, text.length); // 用于移动设备
-
-      try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-          resolve();
-        } else {
-          console.log('execCommand 失败，尝试备选方案2');
-          fallbackCopyMethod2(text, resolve, reject);
-        }
-      } catch (err) {
-        console.log('execCommand 抛出错误，尝试备选方案2:', err);
-        fallbackCopyMethod2(text, resolve, reject);
-      }
+      textarea.value = text; textarea.select(); textarea.setSelectionRange(0, text.length);
+      try { if (document.execCommand('copy')) resolve(); else fallbackCopyMethod2(text, resolve, reject); }
+      catch (err) { fallbackCopyMethod2(text, resolve, reject); }
     }
-
-    // 备选方法2: 创建新的textarea元素
     function fallbackCopyMethod2(text, resolve, reject) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.left = '-999px';
-      textarea.style.top = '-999px';
-      document.body.appendChild(textarea);
-      
-      textarea.select();
-      textarea.setSelectionRange(0, text.length);
-
-      try {
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textarea);
-        
-        if (successful) {
-          resolve();
-        } else {
-          reject(new Error('复制失败'));
-        }
-      } catch (err) {
-        document.body.removeChild(textarea);
-        reject(err);
-      }
+      const textarea = document.createElement('textarea'); textarea.value = text;
+      textarea.style.position = 'fixed'; textarea.style.left = '-999px'; textarea.style.top = '-999px';
+      document.body.appendChild(textarea); textarea.select(); textarea.setSelectionRange(0, text.length);
+      try { if (document.execCommand('copy')) resolve(); else reject(new Error('复制失败')); }
+      catch (err) { reject(err); } finally { document.body.removeChild(textarea); }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -411,109 +155,60 @@
       const output = document.getElementById("output");
       const executionStats = document.getElementById("executionStats");
 
-      // 执行按钮功能
       runBtn.onclick = async () => {
         output.innerHTML = `<em style='color:#aaa'>${i18n[currentLang].running}</em>`;
-        executionStats.style.display = 'none'; // 隐藏统计信息
-        const startTime = performance.now(); // 记录开始时间
-        
+        executionStats.style.display = 'none';
+        const startTime = performance.now();
         try {
           const curl = input.value.trim();
-          // 先检查输入是否为空
           if (curl === "") throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].emptyInput);
-          // 再检查是否以curl开头
           if (!curl.startsWith("curl")) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidCurl);
 
           const { url, method, headers, body } = parseCurl(curl);
           if (!url) throw new Error(i18n[currentLang].errorPrefix + i18n[currentLang].invalidURL);
 
-          const res = await fetch(url, { method, headers, body });
-          const endTime = performance.now(); // 记录结束时间
-          const executionTime = Math.round(endTime - startTime); // 计算执行时间（毫秒）
-          
-          const text = await res.text();
-          const resultObj = {
-            status: res.status,
-            headers: Object.fromEntries(res.headers.entries()),
-            body: tryParseJSON(text)
-          };
-          output.textContent = JSON.stringify(resultObj, null, 2);
-          
-          // 显示执行统计信息
-          const isSuccess = res.status >= 200 && res.status < 300;
-          executionStats.innerHTML = `
-            <div class="status ${isSuccess ? 'success' : 'error'}">
-              ${i18n[currentLang].statusCode}${res.status}
-            </div>
-            <div>
-              ${i18n[currentLang].executionTime}${executionTime}ms
-            </div>
-          `;
-          executionStats.style.display = 'flex';
+          const res = await fetch(FUNCTION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url, method, headers, body })
+          });
 
+          const endTime = performance.now();
+          const executionTime = Math.round(endTime - startTime);
+
+          const resultObj = await res.json();
+          let displayBody = resultObj.body;
+          try { displayBody = JSON.stringify(JSON.parse(resultObj.body), null, 2); } catch {}
+          const outputObj = { status: resultObj.status, headers: resultObj.headers, body: displayBody };
+          output.textContent = JSON.stringify(outputObj, null, 2);
+
+          const isSuccess = res.ok && resultObj.status >= 200 && resultObj.status < 300;
+          executionStats.innerHTML = `
+            <div class="status ${isSuccess ? 'success' : 'error'}">${i18n[currentLang].statusCode}${resultObj.status}</div>
+            <div>${i18n[currentLang].executionTime}${executionTime}ms</div>`;
+          executionStats.style.display = 'flex';
         } catch (err) {
           const endTime = performance.now();
           const executionTime = Math.round(endTime - startTime);
-          // 错误信息仅保留文字，无背景框和额外间距
           output.innerHTML = `<div class="error">${err.message}</div>`;
-          
-          // 错误状态统计信息，无特殊背景
           executionStats.innerHTML = `
-            <div class="status error">
-              ${i18n[currentLang].statusCode}错误
-            </div>
-            <div>
-              ${i18n[currentLang].executionTime}${executionTime}ms
-            </div>
-          `;
+            <div class="status error">${i18n[currentLang].statusCode}错误</div>
+            <div>${i18n[currentLang].executionTime}${executionTime}ms</div>`;
           executionStats.style.display = 'flex';
         }
       };
 
-      // 清空按钮功能
-      clearBtn.onclick = () => {
-        input.value = '';
-        output.innerHTML = '';
-        executionStats.style.display = 'none'; // 清空时也隐藏统计信息
-      };
-
-      // 复制结果按钮功能 - 增强版
+      clearBtn.onclick = () => { input.value = ''; output.innerHTML = ''; executionStats.style.display = 'none'; };
       copyBtn.onclick = async () => {
-        // 1. 确保获取正确的输出内容
         let content = output.textContent.trim();
-        
-        // 处理错误信息的情况
-        if (!content && output.querySelector('.error')) {
-          content = output.querySelector('.error').textContent.trim();
-        }
-
-        if (!content) {
-          showNotification(i18n[currentLang].copyEmpty, false);
-          return;
-        }
-
-        // 2. 尝试复制，使用多重备选方案
-        try {
-          await copyToClipboard(content);
-          showNotification(i18n[currentLang].copySuccess);
-        } catch (err) {
-          console.error('所有复制方法均失败:', err);
-          // 3. 如果所有方法都失败，提示用户手动复制
-          showNotification(i18n[currentLang].copyFallback, false);
-          
-          // 辅助用户手动复制：选中输出内容
-          const range = document.createRange();
-          range.selectNodeContents(output);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
+        if (!content && output.querySelector('.error')) content = output.querySelector('.error').textContent.trim();
+        if (!content) { showNotification(i18n[currentLang].copyEmpty, false); return; }
+        try { await copyToClipboard(content); showNotification(i18n[currentLang].copySuccess); }
+        catch { showNotification(i18n[currentLang].copyFallback, false); }
       };
 
-      // 初始化语言
       setLang(currentLang);
     });
   </script>
 </body>
 </html>
-    
