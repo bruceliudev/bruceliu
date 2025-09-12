@@ -42,6 +42,12 @@
     .notification.error { background: #ef4444; }
     .notification.show { opacity: 1; }
     #copyHelper { position: absolute; top: -100px; left: -100px; opacity: 0; pointer-events: none; }
+    /* 新增说明区块样式 */
+    .help-section { margin-top: 2rem; padding: 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; border-radius: 8px; }
+    .help-section h2 { font-size: 1.2rem; margin-top: 0; color: #2563eb; }
+    .help-section pre { background: #f3f4f6; padding: 10px; border-radius: 6px; font-size: 13px; overflow-x: auto; }
+    .help-section a { color: #2563eb; text-decoration: none; }
+    .help-section a:hover { text-decoration: underline; }
   </style>
 </head>
 
@@ -51,7 +57,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-Q1KGXQTXGG');
 </script>
 
@@ -75,10 +80,32 @@
     </div>
     <div id="executionStats" class="execution-stats" style="display: none;"></div>
     <div id="output"></div>
+
+    <!-- 新增说明区块 -->
+    <div class="help-section">
+      <h2>如何使用</h2>
+      <p>在上方输入框中粘贴或输入完整的 <code>curl</code> 命令，然后点击“执行”即可运行并查看结果。</p>
+
+      <h2>CURL 示例</h2>
+      <p>获取一个网页内容：</p>
+      <pre>curl https://httpbin.org/get</pre>
+
+      <p>发送 POST 请求并带参数：</p>
+      <pre>curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d '{"name":"Tom","age":22}'</pre>
+
+      <p>添加请求头：</p>
+      <pre>curl -H "Authorization: Bearer &lt;token&gt;" https://httpbin.org/bearer</pre>
+
+      <h2>反馈</h2>
+      <p>如果你有任何问题或建议，可以点击这里发送邮件反馈：  
+        <a href="mailto:bruceliu.dev@gmail.com">bruceliu.dev@gmail.com</a>
+      </p>
+    </div>
   </main>
   <div id="notification" class="notification"></div>
   <textarea id="copyHelper"></textarea>
 
+  <!-- 原有脚本保持不变 -->
   <script>
     const FUNCTION_URL = "https://curl-proxy.bruceliu-dev.workers.dev/";
 
