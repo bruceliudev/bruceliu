@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+  <!-- 添加Bash语法高亮支持 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
   <style>
     body { font-family: "Segoe UI", Tahoma, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     header { background: #2563eb; color: #fff; padding: 1rem 2rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; }
@@ -37,6 +39,21 @@
     .execution-stats .status { font-weight: 500; font-size: 13px; }
     .execution-stats .status.success { color: #059669; }
     .execution-stats .status.error { color: #dc2626; }
+    /* 高亮编辑器样式 */
+    .input-container { position: relative; }
+    .curl-editor { 
+      width: 100%; min-height: 200px; font-family: monospace; font-size: 14px; 
+      padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+      resize: vertical; transition: border-color 0.2s; 
+      white-space: pre-wrap; word-wrap: break-word; 
+    }
+    .curl-editor:focus { 
+      outline: none; border-color: #2563eb; 
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.2); 
+    }
+    .curl-editor:empty:before { 
+      content: attr(data-placeholder); color: #aaa; 
+    }
     #output { margin-top: 0.5rem; background: #f3f4f6; color: #111827; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.4; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; }
     /* 新增代码高亮样式 */
     #output pre { margin: 0; }
@@ -70,7 +87,11 @@
   </header>
   <main>
     <label for="curlInput"><strong>Enter CURL command:</strong></label>
-    <textarea id="curlInput" placeholder="Please enter a curl command..."></textarea><br/>
+    <!-- 替换普通文本框为高亮编辑器 -->
+    <div class="input-container">
+      <div id="curlEditor" class="curl-editor" contenteditable="true" spellcheck="false" data-placeholder="Please enter a curl command..."></div>
+      <textarea id="curlInput" style="display: none;" placeholder="Please enter a curl command..."></textarea>
+    </div><br/>
     <div class="button-group">
       <button id="runBtn">Run</button>
       <button id="clearBtn">Clear</button>
@@ -165,7 +186,46 @@
       const input = document.getElementById("curlInput");
       const output = document.getElementById("output");
       const executionStats = document.getElementById("executionStats");
+      // 添加高亮编辑器逻辑
+      const editor = document.getElementById("curlEditor");
+  
+      // 同步编辑器内容到文本框
+      function syncEditorToTextarea() {
+        input.value = editor.textContent;
+      }
+  
+      // 高亮CURL命令
+      function highlightCurlCommand() {
+        const text = editor.textContent;
+        // 使用Prism高亮Bash语法
+        editor.innerHTML = Prism.highlight(text, Prism.languages.bash, 'bash');
+        // 保持光标在末尾
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+  
+      // 编辑器事件监听
+      editor.addEventListener('input', () => {
+        syncEditorToTextarea();
+        highlightCurlCommand();
+      });
+  
+      // 修复清除按钮功能
+      // 删除未定义的originalClearFunction相关代码
+      clearBtn.onclick = () => {
+        editor.textContent = '';
+        input.value = ''; // 同时清空隐藏的textarea
+        highlightCurlCommand();
+        output.innerHTML = '';
+        executionStats.style.display = 'none';
+      };
 
+      // 初始化高亮
+      highlightCurlCommand();
       runBtn.onclick = async () => {
         output.innerHTML = `<em style='color:#aaa'>${i18n.running}</em>`;
         executionStats.style.display = 'none';
@@ -213,7 +273,8 @@
         }
       };
 
-      clearBtn.onclick = () => { input.value = ''; output.innerHTML = ''; executionStats.style.display = 'none'; };
+      // 删除以下重复的清空按钮事件定义
+      // clearBtn.onclick = () => { input.value = ''; output.innerHTML = ''; executionStats.style.display = 'none'; };
       copyBtn.onclick = async () => {
         let content = output.dataset.rawJson || '';
         if (!content && output.querySelector('.error')) content = output.querySelector('.error').textContent.trim();
